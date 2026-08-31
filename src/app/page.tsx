@@ -159,49 +159,14 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="hero-visual" aria-hidden="true">
-              <div className="phone">
-                <div className="phone-screen">
-                  <div className="pm-status">
-                    <span>9:41</span>
-                    <span>GymFactor</span>
-                  </div>
-                  <div className="pm-body">
-                    <span className="pm-eyebrow">Push · Day 2</span>
-                    <p className="pm-title">Today</p>
-                    <div className="pm-bar">
-                      <i />
-                    </div>
-
-                    <div className="pm-card active">
-                      <div className="pm-ex">Barbell Bench Press</div>
-                      <div className="pm-meta">Last: 80 kg × 5 · +2.5 kg target</div>
-                      <div className="pm-sets">
-                        <span className="pm-dot done">1</span>
-                        <span className="pm-dot done">2</span>
-                        <span className="pm-dot done">3</span>
-                        <span className="pm-dot">4</span>
-                      </div>
-                    </div>
-
-                    <div className="pm-card">
-                      <div className="pm-ex">Overhead Press</div>
-                      <div className="pm-meta">Last: 45 kg × 6</div>
-                    </div>
-
-                    <div className="pm-card">
-                      <div className="pm-ex">Incline Dumbbell Press</div>
-                      <div className="pm-meta">Last: 26 kg × 10</div>
-                    </div>
-                  </div>
-                  <div className="pm-tabbar">
-                    <span className="pm-tab on" />
-                    <span className="pm-tab" />
-                    <span className="pm-tab" />
-                    <span className="pm-tab" />
-                  </div>
-                </div>
-              </div>
+            <div className="hero-visual">
+              <img
+                className="hero-shot"
+                src="/assets/app-today.png"
+                width={1752}
+                height={4816}
+                alt="GymFactor's Today screen showing an Upper Body session with today's exercises and last-session weights"
+              />
             </div>
           </div>
         </section>

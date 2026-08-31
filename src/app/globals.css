@@ -227,72 +227,16 @@ h1 {
 
 .hero-note { margin-top: 1.1rem; font-size: 0.85rem; color: var(--dim); }
 
-/* ---------- phone mockup ---------- */
+/* ---------- app screenshot ---------- */
 
 .hero-visual { display: flex; justify-content: center; }
 
-.phone {
-  position: relative;
+.hero-shot {
   width: 280px;
-  aspect-ratio: 280 / 570;
-  border-radius: 44px;
-  background: #000;
-  border: 1px solid #333;
-  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.8), inset 0 0 0 6px #0c0c0c;
-  padding: 12px;
+  height: auto;
+  max-width: 100%;
+  filter: drop-shadow(0 40px 90px rgba(0, 0, 0, 0.55));
 }
-
-.phone-screen {
-  height: 100%;
-  border-radius: 34px;
-  background: var(--bg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #1c1c1c;
-}
-
-.pm-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.7rem 1.1rem 0.2rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.pm-body { padding: 0.6rem 1.1rem 1.1rem; flex: 1; overflow: hidden; }
-
-.pm-eyebrow { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
-.pm-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; margin: 0.15rem 0 0.9rem; }
-
-.pm-bar { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin-bottom: 1rem; }
-.pm-bar > i { display: block; height: 100%; width: 64%; background: linear-gradient(90deg, var(--accent-bottom), var(--accent-top)); border-radius: 999px; }
-
-.pm-card {
-  background: var(--card);
-  border: 1px solid var(--rule);
-  border-radius: 16px;
-  padding: 0.8rem 0.9rem;
-  margin-bottom: 0.7rem;
-}
-.pm-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.pm-card .pm-ex { font-size: 0.82rem; font-weight: 700; letter-spacing: -0.01em; }
-.pm-card .pm-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.15rem; }
-.pm-card .pm-sets { display: flex; gap: 0.3rem; margin-top: 0.55rem; }
-.pm-dot { width: 22px; height: 22px; border-radius: 7px; background: var(--track); display: grid; place-items: center; font-size: 0.6rem; font-weight: 700; color: var(--dim); }
-.pm-dot.done { background: var(--accent); color: var(--on-accent); }
-
-.pm-tabbar {
-  display: flex;
-  justify-content: space-around;
-  padding: 0.55rem 0 0.7rem;
-  border-top: 1px solid var(--rule);
-  background: var(--surface);
-}
-.pm-tab { width: 20px; height: 20px; border-radius: 6px; background: var(--rule); }
-.pm-tab.on { background: var(--accent); }
 
 /* ---------- feature grid ---------- */
 
