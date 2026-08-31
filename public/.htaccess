@@ -1,0 +1,39 @@
+# GymFactor marketing site — Hostinger (LiteSpeed / Apache)
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Canonical address: force HTTPS + the www host.
+  # Only fires for gymfactor.app itself, so a temporary Hostinger preview URL
+  # (*.hostingersite.com) still works before DNS is pointed.
+  RewriteCond %{HTTP_HOST} gymfactor\.app$ [NC]
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteRule ^ https://www.gymfactor.app%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault              "access plus 1 hour"
+  ExpiresByType text/html     "access plus 1 hour"
+  ExpiresByType text/css      "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png     "access plus 30 days"
+  ExpiresByType image/x-icon  "access plus 30 days"
+  ExpiresByType font/woff2    "access plus 30 days"
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/xml
+</IfModule>
