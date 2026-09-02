@@ -141,7 +141,7 @@ export default function HomePage() {
                 <div className="hero-phone">
                   <iframe
                     className="hero-phone-frame"
-                    src="/assets/prototype.html#screen=today&solo=1"
+                    src="/assets/prototype/#screen=today&solo=1"
                     title="GymFactor interactive prototype — tap through the app"
                     loading="lazy"
                   />

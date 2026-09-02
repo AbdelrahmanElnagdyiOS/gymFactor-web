@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/coming-soon"],
+      disallow: ["/coming-soon", "/assets/prototype/"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
