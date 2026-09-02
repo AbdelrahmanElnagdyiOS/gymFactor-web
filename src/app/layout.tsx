@@ -78,9 +78,10 @@ export const metadata: Metadata = {
     description:
       "Log every set, rep, and weight. Programs, last-session memory, and progress you can read — offline, no account.",
   },
-  // The favicon comes from the app/icon.svg file convention automatically;
-  // only the Apple touch icon needs declaring.
+  // Declaring `icons` here disables Next's app/icon.svg file convention, so the
+  // browser-tab favicon has to be listed explicitly alongside the Apple touch icon.
   icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: "/assets/mark.svg",
   },
 };
