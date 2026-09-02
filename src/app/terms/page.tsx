@@ -6,6 +6,7 @@ import { CONTACT_EMAIL } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description: "Terms and Conditions for the GymFactor iPhone and Apple Watch app.",
+  alternates: { canonical: "/terms" },
 };
 
 const toc: TocItem[] = [

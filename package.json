@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "serve": "npx --yes serve@latest out"
+    "serve": "npx --yes serve@latest out",
+    "prototype:import": "node scripts/import-prototype.mjs"
   },
   "dependencies": {
     "next": "^15.1.6",

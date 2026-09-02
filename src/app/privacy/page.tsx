@@ -6,6 +6,7 @@ import { CONTACT_EMAIL } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "Privacy Policy for the GymFactor iPhone and Apple Watch app.",
+  alternates: { canonical: "/privacy" },
 };
 
 const toc: TocItem[] = [

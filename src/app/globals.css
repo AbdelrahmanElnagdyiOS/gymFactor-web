@@ -142,8 +142,8 @@ section { padding: 4.5rem 0; }
 
 .btn-sm { padding: 0.6rem 1.05rem; font-size: 0.9rem; }
 
-/* App Store badge button */
-.appstore-btn {
+/* App Store / Google Play badge buttons */
+.store-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
@@ -151,15 +151,15 @@ section { padding: 4.5rem 0; }
   color: #fff;
   border: 1px solid #3a3a3a;
   border-radius: 14px;
-  padding: 0.6rem 1.2rem 0.65rem;
+  padding: 0.55rem 1.15rem 0.6rem;
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
-.appstore-btn:hover { text-decoration: none; border-color: #666; }
-.appstore-btn:active { transform: translateY(1px); }
-.appstore-btn svg { width: 26px; height: 26px; flex: none; }
-.appstore-btn .as-copy { display: flex; flex-direction: column; line-height: 1.1; text-align: left; }
-.appstore-btn .as-small { font-size: 0.66rem; letter-spacing: 0.02em; color: #cfcfcf; }
-.appstore-btn .as-large { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+.store-btn:hover { text-decoration: none; border-color: #666; }
+.store-btn:active { transform: translateY(1px); }
+.store-btn-icon { width: 24px; height: 24px; flex: none; }
+.store-btn-copy { display: flex; flex-direction: column; line-height: 1.12; text-align: left; }
+.store-btn-small { font-size: 0.62rem; letter-spacing: 0.03em; color: #cfcfcf; text-transform: uppercase; }
+.store-btn-large { font-size: 1.12rem; font-weight: 700; letter-spacing: -0.01em; }
 
 /* ---------- hero ---------- */
 
@@ -227,15 +227,75 @@ h1 {
 
 .hero-note { margin-top: 1.1rem; font-size: 0.85rem; color: var(--dim); }
 
-/* ---------- app screenshot ---------- */
+/* ---------- app prototype ---------- */
 
 .hero-visual { display: flex; justify-content: center; }
 
+/* Interactive prototype: desktop only (needs room; its inner scroll would
+   fight the page on touch). Small screens fall back to the static shot. */
+.hero-phone-wrap {
+  position: relative;
+  width: 404px;
+  flex: none;
+}
+
+.hero-phone {
+  width: 404px;
+  height: 868px;
+  border-radius: 60px;
+  overflow: hidden;
+  background: #0a0a0a; /* matches the prototype's own background */
+  filter: drop-shadow(0 34px 60px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+}
+
+.hero-phone-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #0a0a0a;
+  color-scheme: dark;
+}
+
+.hero-phone-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(16, 16, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+  .hero-phone-wrap {
+    transform: scale(0.82);
+    transform-origin: top center;
+    margin-bottom: -156px; /* reclaim 868 * 0.18 collapsed by scale */
+  }
+}
+
+/* ---------- static app screenshot (mobile hero + fallback) ---------- */
+
 .hero-shot {
+  display: none;
   width: 280px;
   height: auto;
   max-width: 100%;
   filter: drop-shadow(0 40px 90px rgba(0, 0, 0, 0.55));
+}
+
+@media (max-width: 900px) {
+  .hero-phone { display: none; }
+  .hero-shot { display: block; }
 }
 
 /* ---------- feature grid ---------- */
@@ -325,6 +385,140 @@ h2 {
 .stat .n.accent { color: var(--accent); }
 .stat .l { font-size: 0.82rem; color: var(--muted); margin-top: 0.15rem; }
 
+/* ---------- Apple Watch mockups ---------- */
+
+.watch-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.6rem 1.2rem;
+  margin-top: 2.6rem;
+}
+@media (max-width: 900px) { .watch-strip { grid-template-columns: repeat(2, 1fr); gap: 2rem 1.4rem; } }
+@media (max-width: 420px) { .watch-strip { grid-template-columns: 1fr; } }
+
+.watch-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+.watch-card figcaption {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.watch {
+  width: 100%;
+  max-width: 188px;
+  aspect-ratio: 188 / 226;
+  padding: 11px;
+  border-radius: 26% / 22%;
+  background: linear-gradient(160deg, #1c1c1c, #050505);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 26px 50px -22px rgba(0, 0, 0, 0.85);
+}
+
+.watch-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 20% / 17%;
+  background: #000;
+  overflow: hidden;
+  padding: 14px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.2;
+}
+.watch-screen.w-center { align-items: center; justify-content: center; gap: 6px; text-align: center; }
+
+/* -- log set -- */
+.w-head { display: flex; align-items: center; gap: 6px; }
+.w-back { color: var(--accent); font-size: 17px; font-weight: 700; line-height: 1; }
+.w-title-wrap { display: flex; flex-direction: column; }
+.w-title { font-size: 13px; font-weight: 700; letter-spacing: -0.02em; }
+.w-sub { font-size: 9.5px; color: var(--dim); }
+.w-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: #1c1c1c;
+  border-radius: 12px;
+  padding: 7px 9px;
+}
+.w-metric { display: flex; flex-direction: column; }
+.w-label { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.w-value { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+.w-value small { font-size: 9px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+.w-steppers { display: flex; gap: 4px; }
+.w-steppers span {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 7px;
+  background: #333;
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+}
+.w-cta {
+  margin-top: auto;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px 0;
+  border-radius: 999px;
+}
+
+/* -- exercise picker -- */
+.w-dot {
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.w-dot-sm { width: 34px; height: 34px; font-size: 11px; background: #2a2a2a; color: var(--dim); }
+.w-dot-lg {
+  width: 54px; height: 54px; font-size: 17px;
+  background: var(--accent); color: var(--on-accent);
+  box-shadow: 0 0 22px -2px rgba(211, 244, 91, 0.55);
+}
+.w-dot-label { font-size: 10px; color: var(--dim); }
+.w-dot-label-active { font-size: 12px; font-weight: 700; color: var(--text); }
+
+/* -- live stats -- */
+.watch-screen.w-live { justify-content: center; gap: 6px; }
+.w-live-time { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.w-live-kcal { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); }
+.w-live-kcal small,
+.w-live-hr { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.w-live-kcal small { font-size: 9px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.w-heart { color: var(--negative); }
+
+/* -- rest timer -- */
+.w-rest-label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.w-rest-time { font-size: 40px; font-weight: 800; letter-spacing: -0.04em; color: var(--accent); }
+.w-rest-skip {
+  margin-top: 2px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 20px;
+  border-radius: 999px;
+}
+
+/* store badges side by side in the Pro card */
+.pro-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+
 /* ---------- pro ---------- */
 
 .pro-card {
@@ -413,6 +607,14 @@ h2 {
 .site-footer a:hover { color: var(--text); text-decoration: none; }
 .site-footer .foot-links { display: flex; gap: 1.3rem; flex-wrap: wrap; }
 .site-footer .brand { font-size: 0.95rem; }
+.site-footer .foot-tagline {
+  width: 100%;
+  margin: 0.4rem 0;
+  max-width: 44rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--dim);
+}
 
 /* ---------- legal pages (app look & feel) ---------- */
 

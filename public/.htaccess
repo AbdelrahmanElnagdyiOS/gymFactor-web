@@ -16,6 +16,14 @@ Options -Indexes
 
 ErrorDocument 404 /404.html
 
+# Next.js emits the Open Graph image as an extensionless file. Pin its MIME
+# type so crawlers (and nosniff clients) accept it as an image.
+<IfModule mod_mime.c>
+  <Files "opengraph-image">
+    ForceType image/png
+  </Files>
+</IfModule>
+
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"

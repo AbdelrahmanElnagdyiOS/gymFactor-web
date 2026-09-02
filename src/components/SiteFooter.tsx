@@ -12,6 +12,11 @@ export function SiteFooter() {
             <span className="factor">FACTOR</span>
           </span>
         </Link>
+        <p className="foot-tagline">
+          GymFactor is a gym workout logger for iPhone and Apple Watch — build a
+          training program, log every set and rep, and track your strength progress
+          offline.
+        </p>
         <span className="foot-links">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>

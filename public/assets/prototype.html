@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GymFactor — interactive prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     GymFactor prototype — rebuilt to match the FITTR redesign
+     (Figma: FITTR – Fitness App Redesign). Self-contained: plain
+     HTML/CSS/JS, no framework, no external runtime.
+     The host site loads it as  /assets/prototype.html#screen=today
+     ============================================================ */
+  :root{
+    --bg:#0a0a0a;
+    --surface:#141414;
+    --surface-2:#1e1e1e;
+    --surface-3:#262626;
+    --line:rgba(255,255,255,.07);
+    --line-strong:rgba(255,255,255,.12);
+    --text:#f4f4f4;
+    --muted:#8c8c8c;
+    --dim:#5c5c5c;
+    --accent:#caf23e;
+    --accent-soft:rgba(202,242,62,.14);
+    --accent-line:rgba(202,242,62,.4);
+    --on-accent:#0c0c0c;
+    --danger:#ff6b6b;
+    --r-lg:26px;
+    --r-md:20px;
+    --r-sm:14px;
+    font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  ::-webkit-scrollbar{width:0;height:0}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+
+  /* ---------- device ---------- */
+  .phone{
+    position:relative;
+    width:393px;height:852px;
+    background:var(--bg);
+    border-radius:52px;
+    overflow:hidden;
+    flex:none;
+    isolation:isolate;
+  }
+  .statusbar{
+    position:absolute;top:0;left:0;right:0;height:54px;z-index:60;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 32px 8px;pointer-events:none;
+    font-size:15px;font-weight:700;letter-spacing:.01em;
+  }
+  .statusbar .sb-icons{display:flex;align-items:center;gap:7px}
+  .island{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:120px;height:34px;border-radius:20px;background:#000;z-index:61;
+  }
+  .home-ind{
+    position:absolute;bottom:9px;left:50%;transform:translateX(-50%);
+    width:134px;height:5px;border-radius:3px;background:rgba(244,244,244,.28);z-index:60;
+  }
+
+  /* ---------- screens ---------- */
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+  .screen.active{display:flex}
+  .scroll{flex:1;overflow-y:auto;padding:66px 20px 128px}
+  .screen.no-tabs .scroll{padding-bottom:40px}
+
+  h1.title{font-size:29px;font-weight:800;letter-spacing:-.03em;line-height:1.08}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+  .muted{color:var(--muted)}
+  .dim{color:var(--dim)}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg)}
+  .btn-primary{
+    width:100%;height:56px;border-radius:999px;background:var(--accent);color:var(--on-accent);
+    font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .15s ease,filter .15s ease;
+  }
+  .btn-primary:active{transform:scale(.98)}
+  .btn-primary:hover{filter:brightness(1.05)}
+  .btn-dark{
+    height:56px;padding:0 22px;border-radius:999px;background:var(--surface-2);color:var(--text);
+    font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .15s ease;
+  }
+  .btn-dark:hover{background:var(--surface-3)}
+  .link-btn{width:100%;text-align:center;font-size:14px;font-weight:600;color:var(--muted);padding:8px}
+  .link-btn:hover{color:var(--text)}
+
+  /* ---------- tab bar ---------- */
+  .tabbar{
+    position:absolute;left:0;right:0;bottom:0;height:92px;z-index:55;
+    background:linear-gradient(180deg,rgba(10,10,10,0) 0%,var(--bg) 34%);
+    display:flex;align-items:flex-start;justify-content:space-around;
+    padding:14px 14px 0;
+  }
+  .screen:not(.show-tabs) .tabbar{display:none}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 16px;border-radius:16px;color:var(--dim)}
+  .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9}
+  .tab span{font-size:10px;font-weight:600}
+  .tab.on{color:var(--accent);background:var(--accent-soft)}
+
+  /* ---------- welcome ---------- */
+  #s-welcome .scroll{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:66px 32px 44px;gap:0}
+  .welcome-mark{
+    width:96px;height:96px;border-radius:28px;
+    background:linear-gradient(155deg,#e2ff6b,#b6e22f);
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    box-shadow:0 22px 60px -14px rgba(202,242,62,.5);margin-bottom:30px;
+  }
+  .welcome-mark i{display:block;width:9px;background:#0c0c0c;border-radius:4px}
+  .welcome-mark i:nth-child(1),.welcome-mark i:nth-child(3){height:30px}
+  .welcome-mark i:nth-child(2){height:46px}
+  .welcome-mark i:nth-child(4){width:16px;height:7px}
+  #s-welcome h1{font-size:38px;font-weight:800;letter-spacing:-.035em;line-height:1.04}
+  #s-welcome p{margin-top:14px;font-size:15px;line-height:1.55;color:var(--muted);max-width:280px}
+  #s-welcome .actions{margin-top:auto;width:100%;display:flex;flex-direction:column;gap:12px;padding-top:40px}
+
+  /* ---------- today ---------- */
+  .today-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+  .today-head .date{font-size:13px;font-weight:600;color:var(--muted)}
+  .today-head h1{margin-top:5px}
+  .avatar{width:40px;height:40px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent);flex:none}
+
+  .program-card{padding:20px;display:flex;flex-direction:column;gap:16px;margin-bottom:12px}
+  .program-card .pc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .program-card .pc-name{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px}
+  .program-card .pc-meta{font-size:13px;color:var(--muted)}
+  .ring{position:relative;width:54px;height:54px;flex:none}
+  .ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .program-card .pc-actions{display:flex;gap:10px}
+  .program-card .btn-primary{height:50px;font-size:15px;flex:1}
+  .program-card .btn-dark{height:50px;font-size:14px;flex:none}
+
+  .stat-row{display:flex;gap:10px;margin-bottom:26px}
+  .stat-card{flex:1;padding:15px 16px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  .stat-card .sc-label{font-size:11.5px;color:var(--muted)}
+  .stat-card .sc-value{font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .stat-card .sc-sub{font-size:11px;color:var(--accent);font-weight:600}
+  .dashes{display:flex;gap:4px}
+  .dashes i{flex:1;height:4px;border-radius:2px;background:var(--surface-3)}
+  .dashes i.on{background:var(--accent)}
+
+  .section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .section-row h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .section-row .sr-side{font-size:12.5px;color:var(--muted)}
+
+  .ex-list{display:flex;flex-direction:column;gap:10px}
+  .ex{background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;transition:border-color .15s ease}
+  .ex.open{border-color:var(--line-strong)}
+  .ex-main{width:100%;display:flex;align-items:center;gap:11px;padding:14px 15px;text-align:left}
+  .ex-num{width:24px;height:24px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex:none}
+  .ex-id{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .ex-id .en{font-size:14.5px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .ex-id .em{font-size:11.5px;color:var(--muted)}
+  .ex-tgt{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .ex-tgt .et{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ex-tgt .ep{font-size:10.5px;color:var(--dim);white-space:nowrap}
+  .ex-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;animation:rise .2s ease both}
+  .ex-body .div{height:1px;background:var(--line)}
+  .set-pills{display:flex;gap:8px}
+  .set-pill{flex:1;padding:10px 0;border-radius:var(--r-sm);background:var(--surface-2);display:flex;flex-direction:column;align-items:center;gap:3px}
+  .set-pill .sp-n{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--dim)}
+  .set-pill .sp-v{font-size:13px;font-weight:700}
+  .last-line{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:var(--r-sm);background:var(--surface-2);font-size:12.5px}
+  .last-line .ll-k{color:var(--muted)}
+  .last-line .ll-v{font-weight:600}
+  .ex-actions{display:flex;gap:8px}
+  .ex-actions button{flex:1;height:40px;border-radius:999px;background:var(--surface-2);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:background .15s ease}
+  .ex-actions button:hover{background:var(--surface-3)}
+  .ex-actions .x{flex:none;width:40px;color:var(--danger)}
+
+  /* ---------- active / rest ---------- */
+  .wk-head{padding:62px 20px 0;flex:none}
+  .wk-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .icon-btn{width:34px;height:34px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+  .icon-btn svg{width:15px;height:15px;stroke:var(--text);fill:none;stroke-width:2.4;stroke-linecap:round}
+  .wk-ttl{text-align:center;line-height:1.25}
+  .wk-ttl b{font-size:14px;font-weight:700}
+  .wk-ttl span{display:block;font-size:11.5px;color:var(--muted)}
+  .seg{display:flex;gap:5px;margin-bottom:8px}
+  .seg i{flex:1;height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden}
+  .seg i b{display:block;height:100%;background:var(--accent);border-radius:2px}
+  .wk-counts{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);font-weight:600}
+  .wk-body{flex:1;display:flex;flex-direction:column;padding:0 20px 30px;overflow-y:auto}
+  .wk-exname{margin-top:28px}
+  .wk-exname .eb{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+  .wk-exname h2{font-size:28px;font-weight:800;letter-spacing:-.03em;margin:6px 0 4px}
+  .wk-exname .es{font-size:13px;color:var(--muted)}
+  .metric{margin-top:14px;padding:18px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line)}
+  .metric .m-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .metric .m-left{display:flex;flex-direction:column;gap:4px}
+  .metric .m-label{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  .metric .m-value{font-size:34px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .metric .m-value small{font-size:15px;font-weight:600;color:var(--muted);margin-left:3px}
+  .steppers{display:flex;gap:8px}
+  .steppers button{width:46px;height:46px;border-radius:14px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;transition:background .12s ease}
+  .steppers button:active{background:var(--surface-3)}
+  .steppers button svg{width:16px;height:16px;stroke:var(--text);fill:none;stroke-width:2.6;stroke-linecap:round}
+  .scan-btn{margin-top:14px;width:100%;height:44px;border-radius:999px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);transition:background .15s ease}
+  .scan-btn:hover{background:var(--surface-3)}
+  .scan-btn svg{width:15px;height:15px;stroke:var(--text);fill:none;stroke-width:2}
+  .active-sets{display:flex;gap:7px;margin-top:14px}
+  .active-sets .as{flex:1;padding:11px 0;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:3px}
+  .active-sets .as.done{background:var(--accent-soft);border-color:transparent}
+  .active-sets .as.now{border-color:var(--accent-line)}
+  .active-sets .as .n{font-size:10px;font-weight:700;color:var(--dim)}
+  .active-sets .as .v{font-size:13px;font-weight:700}
+  .active-sets .as.done .v{color:var(--accent)}
+  .wk-foot{flex:none;padding:12px 20px 30px;display:flex;flex-direction:column;gap:8px}
+
+  .rest-card{margin-top:26px;padding:26px 22px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:16px;animation:rise .25s ease both}
+  .rest-card .rl{font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--muted)}
+  .rest-card .rt{font-size:52px;font-weight:800;letter-spacing:-.04em;color:var(--accent);font-variant-numeric:tabular-nums}
+  .rest-track{width:100%;height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden}
+  .rest-track b{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear}
+  .rest-skip{padding:9px 20px;border-radius:999px;background:var(--surface-2);font-size:13px;font-weight:600}
+  .rest-skip:hover{background:var(--surface-3)}
+
+  /* ---------- completion ---------- */
+  #s-complete .scroll{display:flex;flex-direction:column;padding:96px 22px 40px}
+  .done-check{width:82px;height:82px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;animation:pop .4s ease both}
+  .done-check svg{width:36px;height:36px;stroke:var(--on-accent);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+  #s-complete h1{text-align:center;font-size:31px;font-weight:800;letter-spacing:-.03em}
+  #s-complete .sub{text-align:center;font-size:14px;line-height:1.5;color:var(--muted);max-width:260px;margin:10px auto 26px}
+  .done-stats{display:flex;gap:10px;margin-bottom:14px}
+  .done-stats .ds{flex:1;padding:16px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:5px}
+  .done-stats .ds b{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .done-stats .ds span{font-size:11px;color:var(--muted)}
+  .pr-card{padding:18px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:13px;margin-bottom:auto}
+  .pr-card .pr-h{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700}
+  .pr-card .pr-h span{width:26px;height:26px;border-radius:9px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
+  .pr-card .pr-h svg{width:13px;height:13px;fill:var(--accent)}
+  .pr-row{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+  .pr-row .k{color:var(--muted)}
+  .pr-row .v{display:flex;align-items:center;gap:7px;font-weight:700}
+  .pr-row .d{font-size:10.5px;color:var(--accent);background:var(--accent-soft);padding:3px 6px;border-radius:7px}
+  #s-complete .actions{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+
+  /* ---------- progress ---------- */
+  .pg-card{padding:20px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);margin-bottom:12px}
+  .pg-card .pg-top{display:flex;align-items:flex-start;justify-content:space-between}
+  .pg-card .pg-big{display:flex;align-items:flex-end;gap:8px}
+  .pg-card .pg-big b{font-size:40px;font-weight:800;letter-spacing:-.04em}
+  .pill-pos{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:4px 7px;border-radius:8px;margin-bottom:8px}
+  .pg-card .pg-note{font-size:11px;color:var(--dim);text-align:right;max-width:90px}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:64px;margin-top:16px}
+  .bars i{flex:1;border-radius:4px;background:var(--surface-3)}
+  .bars i.on{background:var(--accent)}
+  .chart-h{display:flex;align-items:flex-start;justify-content:space-between}
+  .chart-h .ch-l b{font-size:14px;font-weight:700}
+  .chart-h .ch-l span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .chart-h .ch-r{font-size:18px;font-weight:800}
+  .chart-h .ch-r small{font-size:11px;color:var(--muted);font-weight:600}
+  .axis{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:6px}
+  .mini-row{display:flex;gap:10px;margin-bottom:12px}
+  .mini{flex:1;padding:16px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  .mini .mk{font-size:11.5px;color:var(--muted)}
+  .mini .mv{font-size:21px;font-weight:800;letter-spacing:-.03em}
+  .rec-list{border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);overflow:hidden}
+  .rec{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .rec:last-child{border-bottom:0}
+  .rec .rk b{font-size:13.5px;font-weight:700}
+  .rec .rk span{display:block;font-size:11px;color:var(--dim);margin-top:2px}
+  .rec .rv{font-size:14px;font-weight:800}
+
+  /* ---------- library ---------- */
+  .search{display:flex;align-items:center;gap:10px;height:46px;padding:0 15px;border-radius:999px;background:var(--surface);border:1px solid var(--line);margin-bottom:14px}
+  .search svg{width:16px;height:16px;stroke:var(--dim);fill:none;stroke-width:2.2}
+  .search input{flex:1;background:none;border:0;outline:none;color:var(--text);font-size:14px;font-family:inherit}
+  .search input::placeholder{color:var(--dim)}
+  .chips{display:flex;gap:7px;overflow-x:auto;margin:0 -20px 10px;padding:0 20px 2px}
+  .chip{flex:none;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .lib-h{display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px}
+  .lib-h b{font-size:14px;font-weight:700}
+  .lib-h span{font-size:12px;color:var(--muted)}
+  .recents{display:flex;gap:9px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px}
+  .recent{flex:none;width:150px;padding:14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;text-align:left}
+  .recent .abbr,.lib-row .abbr{width:34px;height:34px;border-radius:12px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent);flex:none}
+  .recent .rn{font-size:13px;font-weight:700}
+  .recent .rl{font-size:11px;color:var(--dim);margin-top:2px}
+  .lib-list{display:flex;flex-direction:column;gap:8px}
+  .lib-row{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);text-align:left}
+  .lib-row .li{flex:1;min-width:0}
+  .lib-row .li b{font-size:14px;font-weight:700}
+  .lib-row .li span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .lib-row .star{width:14px;height:14px;fill:var(--accent);flex:none}
+  .lib-row .chev{width:14px;height:14px;stroke:var(--dim);fill:none;stroke-width:2.4;flex:none}
+
+  /* ---------- exercise detail ---------- */
+  .det-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .det-media{width:100%;height:158px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-bottom:18px}
+  .det-media svg{width:26px;height:26px;stroke:var(--dim);fill:none;stroke-width:1.8}
+  .det-media span{font-size:11.5px;color:var(--dim)}
+  #s-detail h1{font-size:26px;font-weight:800;letter-spacing:-.028em;margin-bottom:10px}
+  .det-tags{display:flex;gap:7px;margin-bottom:18px}
+  .det-tags span{padding:6px 11px;border-radius:12px;font-size:11.5px;font-weight:600}
+  .det-tags .t1{background:var(--accent-soft);color:var(--accent)}
+  .det-tags .t2{background:var(--surface-2);color:var(--muted)}
+  .det-stats{display:flex;gap:9px;margin-bottom:20px}
+  .det-stats .d{flex:1;padding:14px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line)}
+  .det-stats .d .dk{font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+  .det-stats .d .dv{font-size:16px;font-weight:800;margin-top:5px;letter-spacing:-.02em}
+  #s-detail h2{font-size:15px;font-weight:700;margin:0 0 10px}
+  .steps{display:flex;flex-direction:column;gap:11px;margin-bottom:24px}
+  .step{display:flex;gap:11px;align-items:flex-start}
+  .step .sn{width:20px;height:20px;border-radius:50%;background:var(--surface-2);flex:none;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--accent)}
+  .step p{font-size:13px;line-height:1.5;color:var(--muted)}
+  .hist{border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);overflow:hidden}
+  .hist .h{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .hist .h:last-child{border-bottom:0}
+  .hist .h .hk b{font-size:13px;font-weight:700}
+  .hist .h .hk span{display:block;font-size:11px;color:var(--dim);margin-top:2px}
+  .hist .h .hv{font-size:13.5px;font-weight:700}
+
+  /* ---------- profile ---------- */
+  .pf-user{display:flex;align-items:center;gap:13px;padding:16px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);margin-bottom:10px}
+  .pf-user .pa{width:44px;height:44px;border-radius:50%;background:linear-gradient(150deg,#e2ff6b,#b6e22f);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--on-accent)}
+  .pf-user b{font-size:16px;font-weight:700}
+  .pf-user span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+  .pf-pro{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-radius:var(--r-lg);background:linear-gradient(140deg,var(--accent-soft),rgba(202,242,62,.03));border:1px solid var(--accent-line);margin-bottom:24px}
+  .pf-pro .pp b{font-size:14px;font-weight:700}
+  .pf-pro .pp span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .pf-pro .badge{padding:6px 11px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:700}
+  .pf-sec{font-size:10.5px;font-weight:700;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin:0 0 9px 4px}
+  .pf-group{border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);overflow:hidden;margin-bottom:22px}
+  .pf-item{width:100%;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);text-align:left}
+  .pf-item:last-child{border-bottom:0}
+  .pf-item .pk{flex:1;font-size:14px;font-weight:600}
+  .pf-item .pv{font-size:13px;color:var(--muted)}
+  .pf-item .pc{width:13px;height:13px;stroke:var(--dim);fill:none;stroke-width:2.4}
+  .pf-item.accent .pk{color:var(--accent)}
+  .pf-foot{text-align:center;font-size:11.5px;color:var(--dim);line-height:1.6;padding:4px 0}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="island"></div>
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="#f4f4f4"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#f4f4f4" stroke-width="1.7" stroke-linecap="round"><path d="M1 4.2C3 2.3 5.4 1.3 8 1.3s5 1 7 2.9"/><path d="M3.6 7c1.2-1.2 2.7-1.8 4.4-1.8S11.2 5.8 12.4 7"/><path d="M6.3 9.7c.5-.5 1.1-.8 1.7-.8s1.2.3 1.7.8"/></svg>
+      <span style="display:inline-block;width:23px;height:12px;border-radius:4px;border:1.4px solid rgba(244,244,244,.5);padding:1.6px"><span style="display:block;width:72%;height:100%;border-radius:1.5px;background:#f4f4f4"></span></span>
+    </span>
+  </div>
+
+  <!-- ============ WELCOME ============ -->
+  <section class="screen no-tabs" id="s-welcome">
+    <div class="scroll">
+      <div class="welcome-mark"><i></i><i></i><i></i><i></i><i></i></div>
+      <h1>Let's build<br>your program</h1>
+      <p>Twelve quick questions. You'll be logging your first session in under two minutes.</p>
+      <div class="actions">
+        <button class="btn-primary" data-go="today">Get Started</button>
+        <button class="link-btn" data-go="today">I already have an account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TODAY ============ -->
+  <section class="screen show-tabs" id="s-today">
+    <div class="scroll">
+      <div class="today-head">
+        <div>
+          <div class="date">Monday, 10 August</div>
+          <h1 class="title">Good morning,<br>Alex</h1>
+        </div>
+        <div class="avatar" data-go="profile">A</div>
+      </div>
+
+      <div class="card program-card">
+        <div class="pc-top">
+          <div>
+            <span class="eyebrow">Today · Upper / Lower</span>
+            <div class="pc-name">Upper Body</div>
+            <div class="pc-meta">4 exercises · ~45 min · 13 sets</div>
+          </div>
+          <div class="ring">
+            <svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="23" fill="none" stroke="#262626" stroke-width="5"/><circle cx="27" cy="27" r="23" fill="none" stroke="#caf23e" stroke-width="5" stroke-linecap="round" stroke-dasharray="108 145" transform="rotate(-90 27 27)"/></svg>
+            <b>3/4</b>
+          </div>
+        </div>
+        <div class="pc-actions">
+          <button class="btn-primary" data-go="active-start">Start Workout
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0c0c0c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="btn-dark">Swap
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f4f4f4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4M3 8h13M17 20l4-4-4-4M21 16H8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="sc-label">This week</span>
+          <span class="sc-value">3 of 5</span>
+          <span class="dashes"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+        </div>
+        <div class="stat-card">
+          <span class="sc-label">Streak</span>
+          <span class="sc-value">5 weeks</span>
+          <span class="sc-sub">Best yet — keep it</span>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <h2>Today's exercises</h2>
+        <span class="sr-side" id="today-done">0 of 4 done</span>
+      </div>
+      <div class="ex-list" id="today-ex-list"></div>
+    </div>
+    <nav class="tabbar"></nav>
+  </section>
+
+  <!-- ============ ACTIVE WORKOUT ============ -->
+  <section class="screen no-tabs" id="s-active">
+    <div class="wk-head">
+      <div class="wk-bar">
+        <button class="icon-btn" data-go="today"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="wk-ttl"><b>Upper Body</b><span id="wk-elapsed">25:20 elapsed</span></div>
+        <div style="width:34px"></div>
+      </div>
+      <div class="seg" id="wk-seg"></div>
+      <div class="wk-counts"><span id="wk-c-ex">1 / 4 exercises</span><span id="wk-c-set">4 / 13 sets completed</span></div>
+    </div>
+    <div class="wk-body">
+      <div class="wk-exname">
+        <div class="eb" id="a-muscle">Chest</div>
+        <h2 id="a-name">Barbell Bench Press</h2>
+        <div class="es" id="a-prev">Last session · 57.5 kg × 8</div>
+      </div>
+
+      <div class="metric">
+        <div class="m-top">
+          <div class="m-left">
+            <span class="m-label">Weight</span>
+            <span class="m-value" id="a-weight">62.5<small>kg</small></span>
+          </div>
+          <div class="steppers">
+            <button data-step="w" data-d="-1"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+            <button data-step="w" data-d="1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
+        <button class="scan-btn" id="a-scan">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+          Scan weight
+        </button>
+      </div>
+
+      <div class="metric">
+        <div class="m-top">
+          <div class="m-left">
+            <span class="m-label">Reps</span>
+            <span class="m-value" id="a-reps">8<small>reps</small></span>
+          </div>
+          <div class="steppers">
+            <button data-step="r" data-d="-1"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+            <button data-step="r" data-d="1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="active-sets" id="a-sets"></div>
+    </div>
+    <div class="wk-foot">
+      <button class="btn-primary" id="a-complete">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0c0c0c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Complete Set 2
+      </button>
+      <button class="link-btn" id="a-skip">Skip to next exercise</button>
+    </div>
+  </section>
+
+  <!-- ============ REST ============ -->
+  <section class="screen no-tabs" id="s-rest">
+    <div class="wk-head">
+      <div class="wk-bar">
+        <button class="icon-btn" data-go="today"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div class="wk-ttl"><b>Upper Body</b><span>25:20 elapsed</span></div>
+        <div style="width:34px"></div>
+      </div>
+      <div class="seg" id="rest-seg"></div>
+      <div class="wk-counts"><span id="rest-c-ex">1 / 4 exercises</span><span id="rest-c-set">4 / 13 sets completed</span></div>
+    </div>
+    <div class="wk-body">
+      <div class="wk-exname">
+        <div class="eb" id="r-muscle">Chest</div>
+        <h2 id="r-name">Barbell Bench Press</h2>
+        <div class="es" id="r-prev">Last session · 57.5 kg × 8</div>
+      </div>
+      <div class="rest-card">
+        <span class="rl">REST</span>
+        <span class="rt" id="r-time">1:05</span>
+        <span class="rest-track"><b id="r-bar" style="width:100%"></b></span>
+        <button class="rest-skip" id="r-skip">Skip rest</button>
+      </div>
+    </div>
+    <div class="wk-foot">
+      <button class="btn-primary" id="r-complete">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0c0c0c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span id="r-complete-label">Complete Set 2</span>
+      </button>
+      <button class="link-btn" id="r-skip-ex">Skip to next exercise</button>
+    </div>
+  </section>
+
+  <!-- ============ COMPLETION ============ -->
+  <section class="screen no-tabs" id="s-complete">
+    <div class="scroll">
+      <div class="done-check"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h1>Upper Body done</h1>
+      <p class="sub">You moved more weight than last Monday. That's four sessions this week.</p>
+      <div class="done-stats">
+        <div class="ds"><b>47:12</b><span>Duration</span></div>
+        <div class="ds"><b>5.9t</b><span>Volume lifted</span></div>
+        <div class="ds"><b>13</b><span>Sets completed</span></div>
+      </div>
+      <div class="pr-card">
+        <div class="pr-h">
+          <span><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></span>
+          2 personal records
+        </div>
+        <div class="pr-row"><span class="k">Bench Press</span><span class="v">62.5 kg × 8 <span class="d">+2.5</span></span></div>
+        <div class="pr-row"><span class="k">Cable Row</span><span class="v">57.5 kg × 10 <span class="d">+5</span></span></div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" data-go="progress">See your progress</button>
+        <button class="link-btn" data-go="today">Back to Today</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section class="screen show-tabs" id="s-progress">
+    <div class="scroll">
+      <h1 class="title">Progress</h1>
+      <p class="muted" style="font-size:13px;margin:6px 0 20px">Last 12 weeks</p>
+
+      <div class="pg-card">
+        <div class="pg-top">
+          <div>
+            <div class="muted" style="font-size:12px">Workouts this month</div>
+            <div class="pg-big"><b>12</b><span class="pill-pos">+8%</span></div>
+          </div>
+          <div class="pg-note">2 more than last month</div>
+        </div>
+        <div class="bars">
+          <i style="height:38%"></i><i style="height:55%"></i><i style="height:50%"></i><i style="height:72%"></i>
+          <i style="height:44%"></i><i style="height:66%"></i><i style="height:52%"></i><i style="height:60%"></i>
+          <i style="height:70%"></i><i class="on" style="height:64%"></i><i class="on" style="height:82%"></i><i class="on" style="height:78%"></i>
+        </div>
+      </div>
+
+      <div class="pg-card">
+        <div class="chart-h">
+          <div class="ch-l"><b>Bench Press · Estimated 1RM</b><span>Since March</span></div>
+          <div class="ch-r">88<small>kg</small></div>
+        </div>
+        <svg width="100%" height="96" viewBox="0 0 320 96" preserveAspectRatio="none" style="margin-top:14px;display:block">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#caf23e" stop-opacity=".26"/><stop offset="1" stop-color="#caf23e" stop-opacity="0"/></linearGradient></defs>
+          <path d="M6,74 L32,70 L58,72 L84,58 L110,60 L136,50 L162,52 L188,40 L214,44 L240,30 L266,34 L292,20 L314,14 L314,96 L6,96 Z" fill="url(#g)"/>
+          <polyline points="6,74 32,70 58,72 84,58 110,60 136,50 162,52 188,40 214,44 240,30 266,34 292,20 314,14" fill="none" stroke="#caf23e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="314" cy="14" r="4" fill="#caf23e"/>
+        </svg>
+        <div class="axis"><span>Mar</span><span>May</span><span>Jul</span><span>Now</span></div>
+      </div>
+
+      <div class="mini-row">
+        <div class="mini"><span class="mk">Volume · week</span><span class="mv">18.4t</span>
+          <div class="bars" style="height:26px;margin-top:4px"><i style="height:40%"></i><i style="height:62%"></i><i style="height:54%"></i><i style="height:78%"></i><i style="height:66%"></i><i style="height:84%"></i><i class="on" style="height:92%"></i></div>
+        </div>
+        <div class="mini"><span class="mk">Bodyweight</span><span class="mv">78 kg</span>
+          <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none" style="margin-top:4px"><polyline points="0,6 16,9 33,8 50,12 66,14 83,16 100,18" fill="none" stroke="#5c5c5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <h2 style="font-size:15px;font-weight:700;margin:14px 0 11px">Personal records</h2>
+      <div class="rec-list">
+        <div class="rec"><div class="rk"><b>Back Squat</b><span>2 weeks ago</span></div><div class="rv">120 kg × 5</div></div>
+        <div class="rec"><div class="rk"><b>Bench Press</b><span>Today</span></div><div class="rv">62.5 kg × 8</div></div>
+        <div class="rec"><div class="rk"><b>Deadlift</b><span>Last month</span></div><div class="rv">150 kg × 3</div></div>
+        <div class="rec"><div class="rk"><b>Overhead Press</b><span>3 weeks ago</span></div><div class="rv">45 kg × 6</div></div>
+      </div>
+    </div>
+    <nav class="tabbar"></nav>
+  </section>
+
+  <!-- ============ LIBRARY ============ -->
+  <section class="screen show-tabs" id="s-library">
+    <div class="scroll">
+      <h1 class="title" style="margin-bottom:16px">Exercises</h1>
+      <div class="search">
+        <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input placeholder="Search 214 exercises" id="lib-search">
+      </div>
+      <div class="chips" id="lib-chips">
+        <button class="chip on">All</button><button class="chip">Chest</button><button class="chip">Back</button>
+        <button class="chip">Legs</button><button class="chip">Shoulders</button><button class="chip">Arms</button><button class="chip">Core</button>
+      </div>
+      <div class="lib-h"><b>Recently used</b><span>See All</span></div>
+      <div class="recents">
+        <button class="recent" data-detail><span class="abbr">BP</span><div><div class="rn">Bench Press</div><div class="rl">2 days ago</div></div></button>
+        <button class="recent" data-detail><span class="abbr">BS</span><div><div class="rn">Back Squat</div><div class="rl">4 days ago</div></div></button>
+        <button class="recent" data-detail><span class="abbr">PU</span><div><div class="rn">Pull-Up</div><div class="rl">5 days ago</div></div></button>
+      </div>
+      <div class="lib-h"><b>All exercises</b><span>14 results</span></div>
+      <div class="lib-list" id="lib-list"></div>
+    </div>
+    <nav class="tabbar"></nav>
+  </section>
+
+  <!-- ============ EXERCISE DETAIL ============ -->
+  <section class="screen no-tabs" id="s-detail">
+    <div class="scroll">
+      <div class="det-bar">
+        <button class="icon-btn" data-go="library"><svg viewBox="0 0 24 24" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="icon-btn" id="det-fav"><svg id="det-fav-ic" width="15" height="15" viewBox="0 0 24 24" fill="#caf23e" stroke="#caf23e" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></button>
+      </div>
+      <div class="det-media">
+        <svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>
+        <span>Form demo placeholder</span>
+      </div>
+      <h1>Barbell Bench Press</h1>
+      <div class="det-tags"><span class="t1">Chest</span><span class="t2">Barbell</span></div>
+      <div class="det-stats">
+        <div class="d"><div class="dk">Best set</div><div class="dv">62.5 × 8</div></div>
+        <div class="d"><div class="dk">Est. 1RM</div><div class="dv">88 kg</div></div>
+        <div class="d"><div class="dk">Sessions</div><div class="dv">34</div></div>
+      </div>
+      <h2>How to perform</h2>
+      <div class="steps">
+        <div class="step"><span class="sn">1</span><p>Set your grip just outside shoulder width and pull your shoulder blades down and together.</p></div>
+        <div class="step"><span class="sn">2</span><p>Unrack, then lower the bar under control to mid-chest — about a two-second descent.</p></div>
+        <div class="step"><span class="sn">3</span><p>Touch lightly, then drive up while keeping your feet planted and hips on the bench.</p></div>
+        <div class="step"><span class="sn">4</span><p>Lock out without shrugging. Reset your breath before the next rep.</p></div>
+      </div>
+      <h2>Recent history</h2>
+      <div class="hist">
+        <div class="h"><div class="hk"><b>8 Aug</b><span>3 × 8 @ 60 kg</span></div><div class="hv">1,440 kg</div></div>
+        <div class="h"><div class="hk"><b>5 Aug</b><span>3 × 8 @ 57.5 kg</span></div><div class="hv">1,380 kg</div></div>
+        <div class="h"><div class="hk"><b>1 Aug</b><span>3 × 7 @ 57.5 kg</span></div><div class="hv">1,207 kg</div></div>
+        <div class="h"><div class="hk"><b>29 Jul</b><span>3 × 8 @ 55 kg</span></div><div class="hv">1,320 kg</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE ============ -->
+  <section class="screen show-tabs" id="s-profile">
+    <div class="scroll">
+      <h1 class="title" style="margin-bottom:18px">Profile</h1>
+      <div class="pf-user">
+        <div class="pa">A</div>
+        <div><b>Alex</b><span>Intermediate · Upper / Lower</span></div>
+      </div>
+      <div class="pf-pro">
+        <div class="pp"><b>GymFactor Pro</b><span>Renews 4 Sep 2026</span></div>
+        <span class="badge">Active</span>
+      </div>
+      <div class="pf-sec">Account</div>
+      <div class="pf-group">
+        <button class="pf-item"><span class="pk">Personal information</span><span class="pv">Alex</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Health data</span><span class="pv">Connected</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Email</span><span class="pv">alex@gymfactor.app</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="pf-sec">Training</div>
+      <div class="pf-group">
+        <button class="pf-item"><span class="pk">Training goal</span><span class="pv">Build muscle</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Program</span><span class="pv">Upper / Lower</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Workout schedule</span><span class="pv">4 days</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="pf-sec">Preferences</div>
+      <div class="pf-group">
+        <button class="pf-item"><span class="pk">Language</span><span class="pv">English</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Units</span><span class="pv">kg · cm</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item"><span class="pk">Notifications</span><span class="pv">On</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="pf-sec">Membership</div>
+      <div class="pf-group">
+        <button class="pf-item"><span class="pk">Subscription</span><span class="pv">Pro · yearly</span><svg class="pc" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="pf-item accent"><span class="pk">Restore purchases</span></button>
+      </div>
+      <div class="pf-foot">GymFactor 3.0 (412)<br>Terms · Privacy</div>
+    </div>
+    <nav class="tabbar"></nav>
+  </section>
+
+  <div class="home-ind"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var TABS = [
+    ["today","Today","M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5"],
+    ["library","Exercises","M4 6h16M4 12h16M4 18h10"],
+    ["progress","Progress","M4 19V9M10 19V5M16 19v-6M22 19H2"],
+    ["profile","Profile","M12 8a3.6 3.6 0 1 0 0-7.2M12 8a3.6 3.6 0 1 1 0-7.2M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6"]
+  ];
+  var WORKOUT = [
+    {name:"Barbell Bench Press", muscle:"Chest", sets:3, reps:8, weight:62.5, prev:"57.5 kg × 8", short:"prev 57.5 kg"},
+    {name:"Incline Dumbbell Press", muscle:"Chest", sets:3, reps:10, weight:22.5, prev:"20 kg × 10", short:"prev 20 kg"},
+    {name:"Seated Cable Row", muscle:"Back", sets:4, reps:10, weight:55, prev:"52.5 kg × 10", short:"prev 52.5 kg"},
+    {name:"Lateral Raise", muscle:"Shoulders", sets:3, reps:15, weight:10, prev:"10 kg × 15", short:"prev 10 kg"}
+  ];
+  var TOTAL_SETS = WORKOUT.reduce(function(a,e){return a+e.sets},0);
+  var LIB = [
+    ["BB","Barbell Bench Press","Chest · Barbell",1],["ID","Incline Dumbbell Press","Chest · Dumbbell",0],
+    ["CF","Cable Fly","Chest · Cable",0],["BS","Back Squat","Legs · Barbell",1],
+    ["RD","Romanian Deadlift","Legs · Barbell",0],["LP","Leg Press","Legs · Machine",0],
+    ["PU","Pull-Up","Back · Bodyweight",0],["SC","Seated Cable Row","Back · Cable",0],
+    ["BR","Barbell Row","Back · Barbell",0],["OP","Overhead Press","Shoulders · Barbell",0],
+    ["LR","Lateral Raise","Shoulders · Dumbbell",0],["BC","Barbell Curl","Arms · Barbell",0],
+    ["TP","Triceps Pushdown","Arms · Cable",0],["PL","Plank","Core · Bodyweight",0]
+  ];
+
+  var st = { exIdx:0, setIdx:0, weight:62.5, reps:8, restLeft:0, restDur:65, timer:null, openEx:0 };
+
+  function $(s,r){return (r||document).querySelector(s)}
+  function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function fmt(n){return (Math.round(n*10)/10).toString()}
+
+  var CUR = "welcome";
+  function go(name){
+    if(name === "active-start"){ resetWorkout(); name = "active"; }
+    if(st.timer && name !== "rest"){ clearInterval(st.timer); st.timer = null; }
+    CUR = name;
+    $all(".screen").forEach(function(s){ s.classList.toggle("active", s.id === "s-" + name); });
+    if(name === "active") renderActive();
+    if(name === "rest") renderRest();
+    if(name === "today") renderToday();
+    syncTabs();
+    var sc = $("#s-" + name + " .scroll"); if(sc) sc.scrollTop = 0;
+    var wb = $("#s-" + name + " .wk-body"); if(wb) wb.scrollTop = 0;
+  }
+
+  /* ---- tab bars ---- */
+  function buildTabs(nav){
+    nav.innerHTML = "";
+    TABS.forEach(function(t){
+      var b = document.createElement("button");
+      b.className = "tab" + (t[0] === CUR ? " on" : "");
+      b.innerHTML = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="' + t[2] + '"/></svg><span>' + t[1] + '</span>';
+      b.addEventListener("click", function(){ go(t[0]); });
+      nav.appendChild(b);
+    });
+  }
+  function syncTabs(){ $all(".tabbar").forEach(buildTabs); }
+
+  /* ---- today ---- */
+  function renderToday(){
+    var list = $("#today-ex-list");
+    list.innerHTML = "";
+    WORKOUT.forEach(function(e,i){
+      var open = st.openEx === i;
+      var el = document.createElement("div");
+      el.className = "ex" + (open ? " open" : "");
+      var setsHtml = "";
+      for(var k=0;k<e.sets;k++) setsHtml += '<div class="set-pill"><span class="sp-n">SET ' + (k+1) + '</span><span class="sp-v">' + fmt(e.weight) + '×' + e.reps + '</span></div>';
+      el.innerHTML =
+        '<button class="ex-main">' +
+          '<span class="ex-num">' + (i+1) + '</span>' +
+          '<span class="ex-id"><span class="en">' + e.name + '</span><span class="em">' + e.muscle + ' · ' + e.sets + ' sets</span></span>' +
+          '<span class="ex-tgt"><span class="et">' + fmt(e.weight) + ' kg × ' + e.reps + '</span><span class="ep">' + e.short + '</span></span>' +
+        '</button>' +
+        (open ?
+        '<div class="ex-body">' +
+          '<div class="div"></div>' +
+          '<div class="set-pills">' + setsHtml + '</div>' +
+          '<div class="last-line"><span class="ll-k">Last session</span><span class="ll-v">' + e.prev + '</span></div>' +
+          '<div class="ex-actions"><button data-act="details">Details</button><button data-act="swap">Swap</button><button class="x">✕</button></div>' +
+        '</div>' : '');
+      el.querySelector(".ex-main").addEventListener("click", function(){
+        st.openEx = open ? -1 : i; renderToday();
+      });
+      var d = el.querySelector('[data-act="details"]');
+      if(d) d.addEventListener("click", function(){ go("detail"); });
+      list.appendChild(el);
+    });
+  }
+
+  /* ---- active ---- */
+  function resetWorkout(){
+    st.exIdx = 0; st.setIdx = 0;
+    st.weight = WORKOUT[0].weight; st.reps = WORKOUT[0].reps;
+  }
+  function completedSetsBefore(idx){
+    var n = 0; for(var i=0;i<idx;i++) n += WORKOUT[i].sets; return n;
+  }
+  function renderSeg(container){
+    container.innerHTML = "";
+    WORKOUT.forEach(function(e,i){
+      var pct = i < st.exIdx ? 100 : (i === st.exIdx ? Math.round(st.setIdx/e.sets*100) : 0);
+      container.innerHTML += '<i><b style="width:' + pct + '%"></b></i>';
+    });
+  }
+  function renderActive(){
+    var e = WORKOUT[st.exIdx];
+    $("#a-muscle").textContent = e.muscle.toUpperCase();
+    $("#a-name").textContent = e.name;
+    $("#a-prev").textContent = "Last session · " + e.prev;
+    $("#a-weight").innerHTML = fmt(st.weight) + '<small>kg</small>';
+    $("#a-reps").innerHTML = st.reps + '<small>reps</small>';
+    $("#a-complete").lastChild.textContent = " Complete Set " + (st.setIdx + 1);
+    renderSeg($("#wk-seg"));
+    $("#wk-c-ex").textContent = (st.exIdx + 1) + " / " + WORKOUT.length + " exercises";
+    $("#wk-c-set").textContent = (completedSetsBefore(st.exIdx) + st.setIdx) + " / " + TOTAL_SETS + " sets completed";
+    var sets = $("#a-sets"); sets.innerHTML = "";
+    for(var k=0;k<e.sets;k++){
+      var cls = k < st.setIdx ? "as done" : (k === st.setIdx ? "as now" : "as");
+      var v = k < st.setIdx ? (fmt(st.weight) + "×" + st.reps) : (k === st.setIdx ? "now" : "—");
+      sets.innerHTML += '<div class="' + cls + '"><span class="n">SET ' + (k+1) + '</span><span class="v">' + v + '</span></div>';
+    }
+  }
+  function advance(afterRest){
+    var e = WORKOUT[st.exIdx];
+    st.setIdx++;
+    if(st.setIdx >= e.sets){
+      st.exIdx++;
+      st.setIdx = 0;
+      if(st.exIdx >= WORKOUT.length){ go("complete"); return; }
+      st.weight = WORKOUT[st.exIdx].weight;
+      st.reps = WORKOUT[st.exIdx].reps;
+    }
+    go(afterRest ? "active" : "rest");
+  }
+
+  /* ---- rest ---- */
+  function renderRest(){
+    var e = WORKOUT[st.exIdx];
+    $("#r-muscle").textContent = e.muscle.toUpperCase();
+    $("#r-name").textContent = e.name;
+    $("#r-prev").textContent = "Last session · " + e.prev;
+    $("#r-complete-label").textContent = "Complete Set " + (st.setIdx + 1);
+    renderSeg($("#rest-seg"));
+    $("#rest-c-ex").textContent = (st.exIdx + 1) + " / " + WORKOUT.length + " exercises";
+    $("#rest-c-set").textContent = (completedSetsBefore(st.exIdx) + st.setIdx) + " / " + TOTAL_SETS + " sets completed";
+    st.restLeft = st.restDur;
+    tickRest();
+    if(st.timer) clearInterval(st.timer);
+    st.timer = setInterval(function(){
+      st.restLeft--;
+      if(st.restLeft <= 0){ clearInterval(st.timer); st.timer = null; go("active"); return; }
+      tickRest();
+    }, 1000);
+  }
+  function tickRest(){
+    var m = Math.floor(st.restLeft/60), s = st.restLeft%60;
+    $("#r-time").textContent = m + ":" + (s < 10 ? "0" + s : s);
+    $("#r-bar").style.width = Math.max(0, st.restLeft/st.restDur*100) + "%";
+  }
+
+  /* ---- library ---- */
+  function renderLib(filter){
+    var list = $("#lib-list"); list.innerHTML = "";
+    LIB.forEach(function(x){
+      if(filter && x[1].toLowerCase().indexOf(filter) < 0) return;
+      var b = document.createElement("button");
+      b.className = "lib-row";
+      b.innerHTML = '<span class="abbr">' + x[0] + '</span>' +
+        '<span class="li"><b>' + x[1] + '</b><span>' + x[2] + '</span></span>' +
+        (x[3] ? '<svg class="star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>' : '') +
+        '<svg class="chev" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+      b.addEventListener("click", function(){ go("detail"); });
+      list.appendChild(b);
+    });
+  }
+
+  /* ---- wire events ---- */
+  document.addEventListener("click", function(ev){
+    var g = ev.target.closest("[data-go]");
+    if(g){ go(g.getAttribute("data-go")); }
+    var d = ev.target.closest("[data-detail]");
+    if(d){ go("detail"); }
+  });
+  $all("[data-step]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var kind = b.getAttribute("data-step"), dir = +b.getAttribute("data-d");
+      if(kind === "w") st.weight = Math.max(0, st.weight + dir*2.5);
+      else st.reps = Math.max(1, st.reps + dir);
+      renderActive();
+    });
+  });
+  $("#a-complete").addEventListener("click", function(){ advance(false); });
+  $("#a-skip").addEventListener("click", function(){
+    st.setIdx = WORKOUT[st.exIdx].sets - 1; advance(false);
+  });
+  $("#a-scan").addEventListener("click", function(){
+    var b = $("#a-scan"); b.style.transform = "scale(.96)";
+    setTimeout(function(){ b.style.transform = ""; }, 140);
+  });
+  $("#r-skip").addEventListener("click", function(){
+    if(st.timer){ clearInterval(st.timer); st.timer = null; } go("active");
+  });
+  $("#r-complete").addEventListener("click", function(){
+    if(st.timer){ clearInterval(st.timer); st.timer = null; } advance(true);
+  });
+  $("#r-skip-ex").addEventListener("click", function(){
+    if(st.timer){ clearInterval(st.timer); st.timer = null; }
+    st.setIdx = WORKOUT[st.exIdx].sets - 1; advance(true);
+  });
+  $("#lib-search").addEventListener("input", function(){ renderLib(this.value.trim().toLowerCase()); });
+  $all("#lib-chips .chip").forEach(function(c){
+    c.addEventListener("click", function(){
+      $all("#lib-chips .chip").forEach(function(x){ x.classList.remove("on"); });
+      c.classList.add("on");
+    });
+  });
+  var favOn = true;
+  $("#det-fav").addEventListener("click", function(){
+    favOn = !favOn;
+    $("#det-fav-ic").setAttribute("fill", favOn ? "#caf23e" : "none");
+  });
+
+  /* ---- boot ---- */
+  renderToday();
+  renderLib("");
+  syncTabs();
+  var hash = (location.hash || "").replace(/^#/, "");
+  var params = {};
+  hash.split("&").forEach(function(kv){ var p = kv.split("="); params[p[0]] = p[1]; });
+  var start = params.screen || "welcome";
+  var VALID = ["welcome","today","active","rest","complete","progress","library","detail","profile"];
+  go(VALID.indexOf(start) >= 0 ? start : "welcome");
+})();
+</script>
+</body>
+</html>
