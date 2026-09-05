@@ -76,8 +76,15 @@
   }
 
   /* ---------- screens ---------- */
-  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
-  .screen.active{display:flex}
+  .screen{
+    position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;
+    opacity:0;
+    transition:opacity .3s ease, display .3s allow-discrete;
+  }
+  .screen.active{display:flex;opacity:1}
+  /* fade the incoming screen up from 0 on the frame it becomes active
+     (progressive enhancement: older engines just hard-cut) */
+  @starting-style{ .screen.active{opacity:0} }
   .scroll{flex:1;overflow-y:auto;padding:66px 20px 128px}
   .screen.no-tabs .scroll{padding-bottom:40px}
 

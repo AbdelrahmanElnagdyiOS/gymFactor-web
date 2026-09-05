@@ -39,9 +39,10 @@ const STEPS = [
 export function HeroStage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const railFillRef = useRef<HTMLSpanElement>(null);
+  const barFillRef = useRef<HTMLSpanElement>(null);
   const activeRef = useRef(0);
   const [active, setActive] = useState(0);
-  const [progress, setProgress] = useState(0);
 
   const pushScreen = (i: number) => {
     // No ready-gate: the prototype boots fast and the scrub re-posts on every
@@ -65,7 +66,12 @@ export function HeroStage() {
       const scrollable = rect.height - window.innerHeight;
       const p =
         scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 0;
-      setProgress(p);
+
+      // Write the progress indicators straight to the DOM — going through
+      // React state here would re-render the whole hero on every scroll frame.
+      const pct = `scaleY(${p})`;
+      if (railFillRef.current) railFillRef.current.style.transform = pct;
+      if (barFillRef.current) barFillRef.current.style.transform = `scaleX(${p})`;
 
       const i = Math.min(STEPS.length - 1, Math.floor(p * STEPS.length));
       if (i !== activeRef.current) {
@@ -135,7 +141,7 @@ export function HeroStage() {
                 />
               </div>
               <div className="hero-scrollbar" aria-hidden="true">
-                <span style={{ transform: `scaleY(${progress})` }} />
+                <span ref={railFillRef} />
               </div>
             </div>
 
@@ -159,7 +165,7 @@ export function HeroStage() {
             </ol>
 
             <div className="hero-progress" aria-hidden="true">
-              <span style={{ transform: `scaleX(${progress})` }} />
+              <span ref={barFillRef} />
             </div>
           </div>
         </div>
