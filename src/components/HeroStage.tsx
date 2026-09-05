@@ -95,6 +95,7 @@ export function HeroStage() {
 
   return (
     <section className="hero">
+      <div className="hero-aura" aria-hidden="true" />
       <div className="hero-intro wrap">
         <span className="eyebrow">
           Gym workout logger · iPhone &amp; Apple Watch
@@ -122,7 +123,6 @@ export function HeroStage() {
 
       <div className="hero-stage" ref={stageRef}>
         <div className="hero-stage-sticky">
-          <div className="hero-glow" />
           <div className="hero-stage-grid wrap">
             <div className="hero-phone-wrap">
               <div className="hero-phone">

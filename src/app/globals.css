@@ -209,7 +209,25 @@ section { padding: 4.5rem 0; }
   height: 100svh;
   display: flex;
   align-items: center;
-  overflow: hidden; /* clips the glow; safe on the sticky element itself */
+  overflow: hidden; /* safe on the sticky element itself */
+}
+
+/* Full-bleed lime aura washing down from the top of the page — replaces the
+   old fixed-size circle that read as a cropped blob behind the phone. */
+.hero-aura {
+  position: absolute;
+  top: -80px;
+  left: 0;
+  right: 0;
+  height: 980px;
+  background: radial-gradient(
+    135% 100% at 50% 0%,
+    rgba(211, 244, 91, 0.20) 0%,
+    rgba(211, 244, 91, 0.08) 30%,
+    rgba(211, 244, 91, 0) 66%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero-glow {
