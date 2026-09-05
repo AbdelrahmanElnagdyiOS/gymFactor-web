@@ -5,11 +5,13 @@ import { AppStoreButton } from "@/components/AppStoreButton";
 import { PlayStoreButton } from "@/components/PlayStoreButton";
 
 /**
- * Scroll-scrubbed hero. The phone pins to the viewport while the section
- * scrolls past it; each quarter of that scroll advances the embedded
- * prototype (`/assets/prototype.html`) to the next screen and lights up the
- * matching step. Falls back to a static, fully-expanded layout on small
- * screens and when the visitor prefers reduced motion (see globals.css).
+ * Scroll-scrubbed hero. `.hero-intro` scrolls away normally, then
+ * `.hero-stage` pins the phone to the viewport while the visitor keeps
+ * scrolling; each quarter of that scroll advances the embedded prototype
+ * (`/assets/prototype.html`) to the next screen and lights up the matching
+ * step. The pinned stage is sized to one viewport so this works on phones
+ * too — there it shows just the active step plus a progress bar. Reduced
+ * motion un-pins and lists every step (see globals.css).
  */
 const STEPS = [
   {
@@ -35,7 +37,7 @@ const STEPS = [
 ] as const;
 
 export function HeroStage() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const activeRef = useRef(0);
   const [active, setActive] = useState(0);
@@ -43,8 +45,8 @@ export function HeroStage() {
 
   const pushScreen = (i: number) => {
     // No ready-gate: the prototype boots fast and the scrub re-posts on every
-    // step change, so a message that lands before it's listening self-heals on
-    // the next tick. onLoad below covers "scrolled before the iframe existed".
+    // step change, so a message that lands early self-heals on the next tick.
+    // onLoad below covers "scrolled before the iframe existed".
     iframeRef.current?.contentWindow?.postMessage(
       { type: "gf:screen", screen: STEPS[i].screen },
       "*",
@@ -52,20 +54,14 @@ export function HeroStage() {
   };
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    // Only scrub on wider screens with motion allowed; otherwise the CSS
-    // fallback shows every step at once and the prototype stays on "today".
-    const mq = window.matchMedia(
-      "(min-width: 901px) and (prefers-reduced-motion: no-preference)",
-    );
-    if (!mq.matches) return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let raf = 0;
     const update = () => {
       raf = 0;
-      const rect = section.getBoundingClientRect();
+      const rect = stage.getBoundingClientRect();
       const scrollable = rect.height - window.innerHeight;
       const p =
         scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 0;
@@ -98,33 +94,50 @@ export function HeroStage() {
   const onIframeLoad = () => pushScreen(activeRef.current);
 
   return (
-    <section className="hero" ref={sectionRef}>
-      <div className="hero-sticky">
-        <div className="hero-glow" />
-        <div className="wrap">
-          <div className="hero-copy">
-            <span className="eyebrow">
-              Gym workout logger · iPhone &amp; Apple Watch
-            </span>
-            <h1>
-              Train. Log.
-              <br />
-              Progress.
-            </h1>
-            <p className="lede">
-              GymFactor is a <strong>workout logging app</strong> that builds your{" "}
-              <strong>training program</strong>, remembers every{" "}
-              <strong>set, rep, and weight</strong> from last time, and turns each{" "}
-              <strong>gym</strong> session into progress you can see — fully
-              offline, no account, no feed.
-            </p>
-            <div className="hero-actions">
-              <AppStoreButton />
-              <PlayStoreButton />
+    <section className="hero">
+      <div className="hero-intro wrap">
+        <span className="eyebrow">
+          Gym workout logger · iPhone &amp; Apple Watch
+        </span>
+        <h1>
+          Train. Log.
+          <br />
+          Progress.
+        </h1>
+        <p className="lede">
+          GymFactor is a <strong>workout logging app</strong> that builds your{" "}
+          <strong>training program</strong>, remembers every{" "}
+          <strong>set, rep, and weight</strong> from last time, and turns each{" "}
+          <strong>gym</strong> session into progress you can see — fully offline,
+          no account, no feed.
+        </p>
+        <div className="hero-actions">
+          <AppStoreButton />
+          <PlayStoreButton />
+        </div>
+        <p className="hero-note">
+          Free to use. GymFactor Pro unlocks plate scan and more.
+        </p>
+      </div>
+
+      <div className="hero-stage" ref={stageRef}>
+        <div className="hero-stage-sticky">
+          <div className="hero-glow" />
+          <div className="hero-stage-grid wrap">
+            <div className="hero-phone-wrap">
+              <div className="hero-phone">
+                <iframe
+                  ref={iframeRef}
+                  className="hero-phone-frame"
+                  src="/assets/prototype/#screen=today"
+                  title="GymFactor prototype — scroll to move through the app"
+                  onLoad={onIframeLoad}
+                />
+              </div>
+              <div className="hero-scrollbar" aria-hidden="true">
+                <span style={{ transform: `scaleY(${progress})` }} />
+              </div>
             </div>
-            <p className="hero-note">
-              Free to use. GymFactor Pro unlocks plate scan and more.
-            </p>
 
             <ol className="hero-steps">
               {STEPS.map((s, i) => (
@@ -144,29 +157,9 @@ export function HeroStage() {
                 </li>
               ))}
             </ol>
-          </div>
 
-          <div className="hero-visual">
-            <div className="hero-phone-wrap">
-              <div className="hero-phone">
-                <iframe
-                  ref={iframeRef}
-                  className="hero-phone-frame"
-                  src="/assets/prototype/#screen=today"
-                  title="GymFactor prototype — scroll to move through the app"
-                  onLoad={onIframeLoad}
-                />
-              </div>
-              <div className="hero-scrollbar" aria-hidden="true">
-                <span style={{ transform: `scaleY(${progress})` }} />
-              </div>
-              <span
-                className={
-                  "hero-phone-hint" + (progress > 0.02 ? " is-hidden" : "")
-                }
-              >
-                Scroll to explore ↓
-              </span>
+            <div className="hero-progress" aria-hidden="true">
+              <span style={{ transform: `scaleX(${progress})` }} />
             </div>
           </div>
         </div>
