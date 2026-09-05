@@ -939,6 +939,27 @@
   var start = params.screen || "welcome";
   var VALID = ["welcome","today","active","rest","complete","progress","library","detail","profile"];
   go(VALID.indexOf(start) >= 0 ? start : "welcome");
+
+  /* ---- external control: let the host page scroll-scrub the screens ----
+     The marketing site pins the phone and posts {type:"gf:screen"} as the
+     visitor scrolls. Freeze any running timer so a scrubbed "rest" screen
+     doesn't tick itself away. */
+  function externalGo(name){
+    if(VALID.indexOf(name) < 0) return;
+    go(name);
+    if(st.timer){ clearInterval(st.timer); st.timer = null; }
+  }
+  window.addEventListener("message", function(e){
+    var d = e.data;
+    if(d && typeof d === "object" && d.type === "gf:screen" && typeof d.screen === "string"){
+      externalGo(d.screen);
+    }
+  });
+  window.addEventListener("hashchange", function(){
+    var h = (location.hash || "").replace(/^#/, ""), pp = {};
+    h.split("&").forEach(function(kv){ var p = kv.split("="); pp[p[0]] = p[1]; });
+    if(pp.screen) externalGo(pp.screen);
+  });
 })();
 </script>
 </body>

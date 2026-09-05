@@ -39,7 +39,10 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-body { overflow-x: hidden; }
+/* Clip stray horizontal overflow without making <body> its own scroll
+   container (plain `overflow-x: hidden` forces `overflow-y: auto`, which
+   breaks position: sticky measurements in the hero). */
+body { overflow-x: clip; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -173,9 +176,28 @@ section { padding: 4.5rem 0; }
 .store-btn-small { font-size: 0.62rem; letter-spacing: 0.03em; color: #cfcfcf; text-transform: uppercase; }
 .store-btn-large { font-size: 1.12rem; font-weight: 700; letter-spacing: -0.01em; }
 
-/* ---------- hero ---------- */
+/* ---------- hero (scroll-scrubbed prototype) ----------
+   `.hero` is a tall track; `.hero-sticky` pins for its whole length while
+   HeroStage.tsx advances the embedded prototype and the step list. On small
+   screens / reduced-motion the track collapses to auto height, the stage
+   un-pins, and every step is shown at once (fallbacks near the end of this
+   block). Keep `.hero` free of `overflow` so the sticky child works. */
 
-.hero { position: relative; padding: 5.5rem 0 4rem; overflow: hidden; }
+.hero {
+  position: relative;
+  --stops: 4;
+  height: calc(100vh + (var(--stops) - 1) * 82vh);
+}
+
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 4.5rem 0;
+  overflow: hidden; /* clips the glow; safe on the sticky element itself */
+}
 
 .hero-glow {
   position: absolute;
@@ -198,12 +220,6 @@ section { padding: 4.5rem 0; }
   align-items: center;
 }
 
-@media (max-width: 900px) {
-  .hero { padding: 3rem 0 3.5rem; }
-  .hero .wrap { grid-template-columns: 1fr; gap: 2.25rem; text-align: center; }
-  .hero-visual { order: -1; }
-}
-
 .eyebrow {
   display: inline-block;
   font-size: 0.78rem;
@@ -224,11 +240,10 @@ h1 {
 
 .hero p.lede {
   color: var(--muted);
-  font-size: 1.1rem;
-  margin: 0 0 1.8rem;
+  font-size: 1.05rem;
+  margin: 0 0 1.5rem;
   max-width: 34rem;
 }
-@media (max-width: 900px) { .hero p.lede { margin-inline: auto; } }
 
 .hero-actions {
   display: flex;
@@ -236,25 +251,98 @@ h1 {
   gap: 0.9rem;
   align-items: center;
 }
-@media (max-width: 900px) { .hero-actions { justify-content: center; } }
 
-.hero-note { margin-top: 1.1rem; font-size: 0.85rem; color: var(--dim); }
+.hero-note { margin-top: 1rem; font-size: 0.85rem; color: var(--dim); }
 
-/* ---------- app prototype ---------- */
+/* ---------- scroll step list ---------- */
+
+.hero-steps {
+  list-style: none;
+  margin: 1.9rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  max-width: 30rem;
+}
+
+.hero-steps li {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  opacity: 0.4;
+  transition: opacity 0.3s ease, background 0.3s ease;
+}
+.hero-steps li.is-done { opacity: 0.68; }
+.hero-steps li.is-active { opacity: 1; background: var(--surface); }
+
+.hero-steps .hs-n {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  background: var(--card);
+  color: var(--muted);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.hero-steps li.is-active .hs-n,
+.hero-steps li.is-done .hs-n { background: var(--accent); color: var(--on-accent); }
+
+.hero-steps .hs-text { display: flex; flex-direction: column; }
+.hero-steps .hs-text strong {
+  font-size: 0.96rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.hero-steps .hs-text > span {
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+}
+.hero-steps li.is-active .hs-text > span {
+  max-height: 7rem;
+  opacity: 1;
+  margin-top: 0.15rem;
+}
+
+/* ---------- phone ---------- */
 
 .hero-visual { display: flex; justify-content: center; width: 100%; min-width: 0; }
 
-/* Interactive prototype: desktop only (needs room; its inner scroll would
-   fight the page on touch). Small screens fall back to the static shot. */
+/* The prototype renders at a fixed 404×868; scale it down as a whole (the
+   inner layout can't reflow) and let `.hero-phone-wrap` carry the scaled
+   box size so nothing overflows. */
 .hero-phone-wrap {
+  --k: 0.74;
   position: relative;
-  width: 404px;
+  width: calc(404px * var(--k));
+  height: calc(868px * var(--k));
   flex: none;
 }
+@media (min-width: 1400px) { .hero-phone-wrap { --k: 0.8; } }
+@media (max-width: 1100px) { .hero-phone-wrap { --k: 0.64; } }
+@media (max-width: 900px)  { .hero-phone-wrap { --k: 0.72; } }
+@media (max-width: 620px)  { .hero-phone-wrap { --k: 0.58; } }
+@media (max-width: 380px)  { .hero-phone-wrap { --k: 0.5; } }
 
 .hero-phone {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 404px;
   height: 868px;
+  transform: scale(var(--k));
+  transform-origin: top left;
   border-radius: 60px;
   overflow: hidden;
   background: #0a0a0a; /* matches the prototype's own background */
@@ -269,6 +357,28 @@ h1 {
   border: 0;
   background: #0a0a0a;
   color-scheme: dark;
+  pointer-events: none; /* scroll drives it, not taps */
+}
+
+/* vertical progress rail alongside the phone */
+.hero-scrollbar {
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  right: -22px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.hero-scrollbar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 0.15s linear;
 }
 
 .hero-phone-hint {
@@ -286,41 +396,39 @@ h1 {
   color: var(--muted);
   pointer-events: none;
   white-space: nowrap;
+  transition: opacity 0.3s ease;
 }
+.hero-phone-hint.is-hidden { opacity: 0; }
 
-@media (max-width: 1180px) {
-  .hero-phone-wrap {
-    transform: scale(0.82);
-    transform-origin: top center;
-    margin-bottom: -156px; /* reclaim 868 * 0.18 collapsed by scale */
-  }
-}
-
-/* ---------- static app screenshot (mobile hero + fallback) ---------- */
-
-.hero-shot {
-  display: none;
-  width: 280px;
-  height: auto;
-  max-width: 100%;
-  filter: drop-shadow(0 40px 90px rgba(0, 0, 0, 0.55));
-}
+/* ---------- fallback: no pin, every step expanded ---------- */
 
 @media (max-width: 900px) {
-  /* Hide the whole prototype wrapper (frame + hint), not just the iframe —
-     its 404px fixed width and scale transform otherwise overflow the viewport
-     and shove the static screenshot off-screen. */
-  .hero-phone-wrap { display: none; }
-  /* The screenshot is very tall (≈1:2.75). Show it as a cropped "peek" so the
-     headline and download buttons stay above the fold on phones. */
-  .hero-shot {
-    display: block;
-    width: 260px;
-    max-height: 440px;
-    object-fit: cover;
-    object-position: top center;
-    border-radius: 28px;
+  .hero { height: auto; }
+  /* `relative` (not `static`) so `overflow: hidden` still contains the
+     absolutely-positioned glow now that the sticky pin is off. */
+  .hero-sticky { position: relative; min-height: 0; padding: 3rem 0 3.5rem; }
+  .hero .wrap { grid-template-columns: 1fr; gap: 2.25rem; text-align: center; }
+  .hero-visual { order: -1; }
+  .hero p.lede { margin-inline: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-steps { margin-inline: auto; text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero { height: auto; }
+  .hero-sticky { position: relative; min-height: 0; }
+}
+
+@media (max-width: 900px), (prefers-reduced-motion: reduce) {
+  .hero-steps li { opacity: 1; }
+  .hero-steps .hs-text > span {
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+    margin-top: 0.15rem;
   }
+  .hero-scrollbar,
+  .hero-phone-hint { display: none; }
 }
 
 /* ---------- feature grid ---------- */

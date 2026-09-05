@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { HeroStage } from "@/components/HeroStage";
 import { AppStoreButton } from "@/components/AppStoreButton";
 import { PlayStoreButton } from "@/components/PlayStoreButton";
 import { faqs } from "@/lib/faq";
@@ -107,57 +108,8 @@ export default function HomePage() {
       <SiteHeader />
 
       <main>
-        {/* HERO */}
-        <section className="hero">
-          <div className="hero-glow" />
-          <div className="wrap">
-            <div className="hero-copy">
-              <span className="eyebrow">Gym workout logger · iPhone &amp; Apple Watch</span>
-              <h1>
-                Train. Log.
-                <br />
-                Progress.
-              </h1>
-              <p className="lede">
-                GymFactor is a <strong>workout logging app</strong> that builds your{" "}
-                <strong>training program</strong>, remembers every <strong>set, rep, and
-                weight</strong> from last time, and turns each <strong>gym</strong> session
-                into progress you can see — fully offline, no account, no feed.
-              </p>
-              <div className="hero-actions">
-                <AppStoreButton />
-                <PlayStoreButton />
-                <a className="btn btn-ghost" href="#features">
-                  See what&apos;s inside
-                </a>
-              </div>
-              <p className="hero-note">
-                Free to use. GymFactor Pro unlocks plate scan and more.
-              </p>
-            </div>
-
-            <div className="hero-visual">
-              <div className="hero-phone-wrap">
-                <div className="hero-phone">
-                  <iframe
-                    className="hero-phone-frame"
-                    src="/assets/prototype/#screen=today&solo=1"
-                    title="GymFactor interactive prototype — tap through the app"
-                    loading="lazy"
-                  />
-                </div>
-                <span className="hero-phone-hint">Live prototype — tap around</span>
-              </div>
-              <img
-                className="hero-shot"
-                src="/assets/app-today.png"
-                width={1752}
-                height={4816}
-                alt="GymFactor's Today screen showing an Upper Body workout with today's exercises and last-session weights"
-              />
-            </div>
-          </div>
-        </section>
+        {/* HERO — scroll-scrubbed prototype, see HeroStage.tsx */}
+        <HeroStage />
 
         {/* WHAT IS GYMFACTOR */}
         <section id="about">
