@@ -60,6 +60,15 @@ img, svg { max-width: 100%; }
   padding: 0 1.5rem;
 }
 
+/* Legal pages: wider than reading prose so the two-column layout
+   (208px contents rail + body card) doesn't squeeze the body into a
+   phone-width column on desktop. */
+.wrap-legal {
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
 section { padding: 4.5rem 0; }
 
 /* ---------- header ---------- */
@@ -142,6 +151,9 @@ section { padding: 4.5rem 0; }
 
 .btn-sm { padding: 0.6rem 1.05rem; font-size: 0.9rem; }
 
+/* Header "Download" CTA — force pure black label for full contrast on lime */
+.site-nav .btn { color: #000; }
+
 /* App Store / Google Play badge buttons */
 .store-btn {
   display: inline-flex;
@@ -187,7 +199,8 @@ section { padding: 4.5rem 0; }
 }
 
 @media (max-width: 900px) {
-  .hero .wrap { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
+  .hero { padding: 3rem 0 3.5rem; }
+  .hero .wrap { grid-template-columns: 1fr; gap: 2.25rem; text-align: center; }
   .hero-visual { order: -1; }
 }
 
@@ -229,7 +242,7 @@ h1 {
 
 /* ---------- app prototype ---------- */
 
-.hero-visual { display: flex; justify-content: center; }
+.hero-visual { display: flex; justify-content: center; width: 100%; min-width: 0; }
 
 /* Interactive prototype: desktop only (needs room; its inner scroll would
    fight the page on touch). Small screens fall back to the static shot. */
@@ -294,8 +307,20 @@ h1 {
 }
 
 @media (max-width: 900px) {
-  .hero-phone { display: none; }
-  .hero-shot { display: block; }
+  /* Hide the whole prototype wrapper (frame + hint), not just the iframe —
+     its 404px fixed width and scale transform otherwise overflow the viewport
+     and shove the static screenshot off-screen. */
+  .hero-phone-wrap { display: none; }
+  /* The screenshot is very tall (≈1:2.75). Show it as a cropped "peek" so the
+     headline and download buttons stay above the fold on phones. */
+  .hero-shot {
+    display: block;
+    width: 260px;
+    max-height: 440px;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 28px;
+  }
 }
 
 /* ---------- feature grid ---------- */
@@ -626,7 +651,7 @@ h2 {
   border-bottom: 1px solid var(--rule);
 }
 .legal-hero .hero-glow { top: -320px; width: 620px; height: 620px; }
-.legal-hero .wrap-narrow { position: relative; z-index: 1; }
+.legal-hero .wrap-legal { position: relative; z-index: 1; }
 .legal-hero h1 {
   font-size: clamp(2.1rem, 5.5vw, 3rem);
   font-weight: 800;

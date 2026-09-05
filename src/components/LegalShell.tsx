@@ -35,14 +35,14 @@ export function LegalShell({
 
       <section className="legal-hero">
         <div className="hero-glow" />
-        <div className="wrap-narrow">
+        <div className="wrap-legal">
           <span className="eyebrow">Legal</span>
           <h1>{title}</h1>
           <p className="meta">{effective}</p>
         </div>
       </section>
 
-      <div className="wrap-narrow">
+      <div className="wrap-legal">
         <div className="legal-layout">
           <nav className="legal-toc" aria-label="Sections">
             <div className="toc-title">Contents</div>
